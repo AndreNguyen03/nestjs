@@ -15,13 +15,14 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { UsersService } from './providers/users.service';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('Users') 
 export class UsersController {
 
 
     constructor(private readonly usersService: UsersService) {
-        // You can inject services here if needed
     }
 
     @Get()
@@ -33,6 +34,28 @@ export class UsersController {
     }
 
     @Get(':id')
+    @ApiOperation({
+        summary: 'Fetches a list of registered users on the application'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Users fetched successfully based on the query',
+        
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        type: 'number',
+        description: 'The number of entries returned per query',
+        example: 10,
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        type: 'number',
+        description: 'The position of the oage number that you want the API to return',
+        example: 1,
+    })
     public getUserById(@Param() getUsersParamDto: GetUsersParamDto) {
         return this.usersService.findById(getUsersParamDto);
     }
