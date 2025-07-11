@@ -1,6 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { GetUsersParamDto } from "../dtos/get-users-param.dto";
 import { AuthService } from "src/auth/providers/auth.service";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "../user.entity";
+import { Repository } from "typeorm";
+import { CreateUserDto } from "../dtos/create-user.dto";
 
 /**
  * UsersService is responsible for managing user-related operations.
@@ -9,29 +13,26 @@ import { AuthService } from "src/auth/providers/auth.service";
 @Injectable()
 export class UsersService {
 
-    /**
-     * Injects the AuthService to check authentication status.
-     * The forwardRef is used to avoid circular dependency issues.
-     * @param authService 
-     */
-    constructor(@Inject(forwardRef(() => AuthService)) private readonly authService: AuthService) {}
+
+
+    constructor(@Inject(forwardRef(() => AuthService)) private readonly authService: AuthService, @InjectRepository(User) private usersRepository: Repository<User>,) { }
 
     /**
      * A private array of users to simulate a database.
      * In a real application, this would be replaced with a database call.
      */
-    private  users = [
-            {
-                id: '1',
-                firstName: 'John',
-                email: 'john@doe.com',
-            },
-            {
-                id: '2',
-                firstName: 'Jane',
-                email: 'jane@alice.com',
-            }
-        ];
+    private users = [
+        {
+            id: '1',
+            firstName: 'John',
+            email: 'john@doe.com',
+        },
+        {
+            id: '2',
+            firstName: 'Jane',
+            email: 'jane@alice.com',
+        }
+    ];
 
     /**
      * findAll retrieves all users with pagination support.
@@ -39,7 +40,7 @@ export class UsersService {
      * @param page 
      * @returns 
      */
-    public findAll( limit: number, page: number) {
+    public findAll(limit: number, page: number) {
         const isAuth = this.authService.isAuth()
         console.log(`isAuth: ${isAuth}`);
         return this.users;
@@ -51,7 +52,7 @@ export class UsersService {
      * @param getUsersParamDto 
      * @returns 
      */
-    public findById(getUsersParamDto : GetUsersParamDto) {
+    public findById(getUsersParamDto: GetUsersParamDto) {
         return this.users.find(user => user.id === getUsersParamDto.id?.toString());
     }
 
@@ -61,7 +62,23 @@ export class UsersService {
      * @param id 
      * @returns 
      */
-    public findOneById(id : string) {
+    public findOneById(id: string) {
         return this.users.find(user => user.id === id);
+    }
+
+    public async createUser(CreateUserDto: CreateUserDto) {
+        // check is user exists with same email
+        const existingUser =  await this.usersRepository.findOne({
+            where: {
+                email: CreateUserDto.email
+            }
+        })
+        // handle exception
+
+        // create a new user
+        let newUser = this.usersRepository.create(CreateUserDto)
+        newUser = await this.usersRepository.save(newUser);
+        
+        return newUser;
     }
 }

@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, maxLength, MaxLength, MinLength, ValidateNested } from "class-validator";
 import { postType } from "../enums/postType.enum";
 import { postStatus } from "../enums/postStatus.enum";
 import { CreatePostMetaOptionsDto } from "./create-post-metaoptions.dto";
@@ -10,11 +10,12 @@ export class CreatePostDto {
     @IsString()
     @MinLength(4)
     @IsNotEmpty()
+    @MaxLength(512)
     @ApiProperty({
         description: 'Title of the post',
         example: 'My First Post',
         minLength: 4,
-        maxLength: 100,
+        maxLength: 512,
     })
     title: string;
 
@@ -31,10 +32,12 @@ export class CreatePostDto {
         description: 'Slug for the post, must be lowercase and can only contain letters, numbers, and hyphens',
         example: 'my-post-slug',
         minLength: 3,
-        maxLength: 50,
+        maxLength: 256,
     })
     @IsString()
     @IsNotEmpty()
+    @MinLength(3)
+    @MaxLength(256)
     @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
         message: 'Slug must be lowercase and can only contain letters, numbers, and hyphens. For example: "my-post-slug"',
     })
@@ -56,8 +59,6 @@ export class CreatePostDto {
         example: '<p>This is the content of the post.</p>',
         required: false,
         type: String,
-        minLength: 10,
-        maxLength: 5000,
     })
     @IsString()
     @IsOptional()
@@ -76,9 +77,11 @@ export class CreatePostDto {
         description: 'URL of the featured image for the post',
         example: 'https://example.com/image.jpg',
         required: false,
+        maxLength: 1024
     })
     @IsUrl()
     @IsOptional()
+    @MaxLength(1024)
     featuredImageUrl?: string;
 
     @ApiPropertyOptional({
