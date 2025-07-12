@@ -1,4 +1,4 @@
-import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { PostsService } from './providers/posts.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -20,7 +20,7 @@ export class PostsController {
     }
 
     @Get(':userId')
-    public getPostById(@Param('userId') userId: string) {
+    public getPostById(@Param('userId') userId: number) {
         return this.postsService.findAllByUserId(userId);
     }
 
@@ -35,8 +35,7 @@ export class PostsController {
     })
     @Post()
     public createPost(@Body() createPostDto: CreatePostDto) {
-        console.log(`create post ::: ${JSON.stringify(createPostDto)}`);
-        return createPostDto;
+        return this.postsService.createPost(createPostDto);
     }
 
     @Patch()
@@ -50,7 +49,11 @@ export class PostsController {
         type: PatchPostDto,
     })
     public updatePost(@Body() patchPostDto: PatchPostDto) {
-        console.log(`update post ::: ${JSON.stringify(patchPostDto)}`);
-        return patchPostDto;
+        return this.postsService.updatePost(patchPostDto);
+    }
+
+    @Delete()
+    public deletePost(@Query('id', ParseIntPipe) id: number) {
+        return this.postsService.detelePost(id)
     }
 }

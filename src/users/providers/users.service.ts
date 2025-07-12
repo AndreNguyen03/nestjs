@@ -62,8 +62,8 @@ export class UsersService {
      * @param id 
      * @returns 
      */
-    public findOneById(id: string) {
-        return this.users.find(user => user.id === id);
+    public async findOneById(userId: number) {
+        return await this.usersRepository.findOneBy({id: userId})
     }
 
     public async createUser(CreateUserDto: CreateUserDto) {
@@ -81,4 +81,6 @@ export class UsersService {
         
         return newUser;
     }
+
+
 }

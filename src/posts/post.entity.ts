@@ -1,7 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn, TreeRepositoryUtils } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { postType } from "./enums/postType.enum";
 import { postStatus } from "./enums/postStatus.enum";
-import { CreatePostMetaOptionsDto } from "./dtos/create-post-metaoptions.dto";
+import { CreatePostMetaOptionsDto } from "../meta-options/dtos/create-post-metaoptions.dto";
+import { MetaOption } from "src/meta-options/meta-option.entity";
+import { User } from "src/users/user.entity";
+import { Tag } from "src/tags/tag.entity";
 
 @Entity()
 export class Post {
@@ -64,7 +67,18 @@ export class Post {
     })
     publishOn?: Date;
 
-    // Work on these in lectures on relationships
-    tags?: string[];
-    metaOptions?: CreatePostMetaOptionsDto[];
+    @OneToOne(() => MetaOption, (metaOption) => metaOption.post, {
+        cascade: true,
+        eager: true
+    })
+    metaOptions?: MetaOption;
+
+    @ManyToOne(() => User, (user) => user.posts, {
+        eager: true
+    })
+    author: User;
+
+    @ManyToMany(() => Tag, (tag) => tag.posts)
+    @JoinTable()
+    tags?: Tag[];
 }

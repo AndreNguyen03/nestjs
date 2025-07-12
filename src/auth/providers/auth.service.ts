@@ -7,7 +7,7 @@ export class AuthService {
     constructor(@Inject(forwardRef(() =>UsersService)) private readonly usersService: UsersService) {}
 
     public login(email: string, password: string) {
-        const user = this.usersService.findOneById('1');
+        const user = this.usersService.findOneById(1);
         // login return SAMPLETOKEN
         return 'SAMPLE_TOKEN';
     }

@@ -1,9 +1,10 @@
-import { IsArray, IsEnum, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, maxLength, MaxLength, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsISO8601, IsJSON, IsNotEmpty, IsOptional, IsString, IsUrl, Matches, maxLength, MaxLength, MinLength, ValidateNested } from "class-validator";
 import { postType } from "../enums/postType.enum";
 import { postStatus } from "../enums/postStatus.enum";
-import { CreatePostMetaOptionsDto } from "./create-post-metaoptions.dto";
+import { CreatePostMetaOptionsDto } from "../../meta-options/dtos/create-post-metaoptions.dto";
 import { Type } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Tag } from "src/tags/tag.entity";
 
 
 export class CreatePostDto {
@@ -25,7 +26,7 @@ export class CreatePostDto {
         example: postType.POST,
     })
     @IsEnum(postType)
-    @IsNotEmpty()    
+    @IsNotEmpty()
     postType: postType;
 
     @ApiProperty({
@@ -91,45 +92,42 @@ export class CreatePostDto {
     })
     @IsISO8601()
     @IsOptional()
-    @Type(() => Date)
-    publishOn: Date;
+    publishOn?: Date;
 
     @ApiPropertyOptional({
-        description: 'Tags associated with the post, must be at least 3 characters long',
-        example: ['nestjs', 'typescript'],
+        description: 'Array of ids of tags',
+        example: [1, 2],
         required: false,
-        type: [String],
+        type: [Number],
     })
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
-    @MinLength(3, { each: true })
-    tags: string[];
+    @IsInt({ each: true })
+    tags?: number[];
 
     @ApiPropertyOptional({
         description: 'Meta options for the post, can include additional metadata like author, keywords, etc.',
-        type: [CreatePostMetaOptionsDto],
+        type: CreatePostMetaOptionsDto,
         required: false,
-        items: {
-            type: 'object',
-            properties: {
-                key: {
-                    type: 'string',
-                    description: 'Key for the meta option, e.g., "sidebarEnabled", "keywords"',
-                    example: 'sidebarEnabled',
-                },
-                value: {
-                    type: 'any',
-                    description: 'Any value that you want to save to the key',
-                    example: true,
-                },
+        example: {
+            metaValue: {
+                sidebarEnabled: true,
+                author: 'John Doe',
             },
-        }
+        },
     })
     @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
+    @ValidateNested()
     @Type(() => CreatePostMetaOptionsDto)
-    metaOptions: CreatePostMetaOptionsDto[];
+    metaOptions?: CreatePostMetaOptionsDto;
+
+    @IsInt()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: 'integer',
+        required: true,
+        example: 1
+    })
+    authorId: number
 }
 
