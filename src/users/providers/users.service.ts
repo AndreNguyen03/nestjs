@@ -5,6 +5,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user.entity";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "../dtos/create-user.dto";
+import { ConfigType } from "@nestjs/config";
+import profileConfig from "../config/profile.config";
 
 /**
  * UsersService is responsible for managing user-related operations.
@@ -15,7 +17,13 @@ export class UsersService {
 
 
 
-    constructor(@Inject(forwardRef(() => AuthService)) private readonly authService: AuthService, @InjectRepository(User) private usersRepository: Repository<User>,) { }
+    constructor(
+        @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
+        @Inject(profileConfig.KEY)
+        private readonly profileConfiguration: ConfigType<typeof profileConfig>
+    ) { }
 
     /**
      * A private array of users to simulate a database.
@@ -42,6 +50,10 @@ export class UsersService {
      */
     public findAll(limit: number, page: number) {
         const isAuth = this.authService.isAuth()
+
+        // test new config
+        console.log(this.profileConfiguration)
+
         console.log(`isAuth: ${isAuth}`);
         return this.users;
     }
@@ -63,12 +75,12 @@ export class UsersService {
      * @returns 
      */
     public async findOneById(userId: number) {
-        return await this.usersRepository.findOneBy({id: userId})
+        return await this.usersRepository.findOneBy({ id: userId })
     }
 
     public async createUser(CreateUserDto: CreateUserDto) {
         // check is user exists with same email
-        const existingUser =  await this.usersRepository.findOne({
+        const existingUser = await this.usersRepository.findOne({
             where: {
                 email: CreateUserDto.email
             }
@@ -78,7 +90,7 @@ export class UsersService {
         // create a new user
         let newUser = this.usersRepository.create(CreateUserDto)
         newUser = await this.usersRepository.save(newUser);
-        
+
         return newUser;
     }
 
