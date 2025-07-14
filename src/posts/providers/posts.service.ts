@@ -1,4 +1,4 @@
-import { Body, Injectable } from '@nestjs/common';
+import { BadRequestException, Body, Injectable, RequestTimeoutException } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
 import { CreatePostDto } from '../dtos/create-post.dto';
 import { postType } from '../enums/postType.enum';
@@ -89,35 +89,61 @@ export class PostsService {
     public async updatePost(patchPostDto: PatchPostDto) {
         // Find the tags
         const tagIds: number[] | undefined = patchPostDto.tags;
-        console.log(tagIds)
         let tags: Tag[] | undefined = undefined;
+        let post: Post | null = null;
 
         if (tagIds) {
-            tags = await this.tagsService.findMultipleTags(tagIds)
-            console.log(tags)
+            try {
+                tags = await this.tagsService.findMultipleTags(tagIds)
+            } catch (error) {
+                throw new RequestTimeoutException(
+                    'Unable to process your request at the moment , try again later!'
+                )
+            }
+        }
+
+        if (!tags || tags.length !== patchPostDto.tags?.length) {
+            throw new BadRequestException(
+                'Please check your tag Ids and ensure they are correct'
+            )
         }
 
         // find the post
-        let post: Post | null  = await this.postsRepository.findOneBy({
-            id: patchPostDto.id
-        })
-
-        // update the properties
-        if (post) {
-            post.title = patchPostDto.title ?? post.title;
-            post.content = patchPostDto.content ?? post.content;
-            post.status = patchPostDto.status ?? post.status;
-            post.postType = patchPostDto.postType ?? post.postType;
-            post.slug = patchPostDto.slug ?? post.slug;
-            post.featuredImageUrl = patchPostDto.featuredImageUrl ?? post.featuredImageUrl;
-            post.publishOn = patchPostDto.publishOn ?? post.publishOn
-            // assign the new tags
-            post.tags = tags;
-
-            return this.postsRepository.save(post)
+        try {
+            post = await this.postsRepository.findOneBy({
+                id: patchPostDto.id
+            })
+        } catch (error) {
+            throw new RequestTimeoutException(
+                'Unable to process your request at the moment, try again later!'
+            )
         }
 
-        // save the post and return
-        return Error(`Post id:${patchPostDto.id}, title: ${patchPostDto.title} not found`);
+        if (!post) {
+            throw new BadRequestException(
+                'The post ID does not exist'
+            )
+        }
+
+        // update the properties
+        post.title = patchPostDto.title ?? post.title;
+        post.content = patchPostDto.content ?? post.content;
+        post.status = patchPostDto.status ?? post.status;
+        post.postType = patchPostDto.postType ?? post.postType;
+        post.slug = patchPostDto.slug ?? post.slug;
+        post.featuredImageUrl = patchPostDto.featuredImageUrl ?? post.featuredImageUrl;
+        post.publishOn = patchPostDto.publishOn ?? post.publishOn
+        // assign the new tags
+        post.tags = tags;
+
+        try {
+            this.postsRepository.save(post)
+        } catch (error) {
+            throw new RequestTimeoutException(
+                'Unable to process your request at the moment please try later'
+            )
+        }
+
+        return post;
     }
 }
