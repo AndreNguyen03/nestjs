@@ -1,13 +1,15 @@
-import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, RequestTimeoutException } from "@nestjs/common";
+import { BadRequestException, Body, forwardRef, HttpException, HttpStatus, Inject, Injectable, RequestTimeoutException } from "@nestjs/common";
 import { GetUsersParamDto } from "../dtos/get-users-param.dto";
 import { AuthService } from "src/auth/providers/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../user.entity";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { ConfigType } from "@nestjs/config";
 import profileConfig from "../config/profile.config";
 import { error } from "console";
+import { UsersCreateManyProvider } from "./users-create-many.provider";
+import { CreateManyUsersDto } from "../dtos/create-many-user.dto";
 
 /**
  * UsersService is responsible for managing user-related operations.
@@ -19,11 +21,28 @@ export class UsersService {
 
 
     constructor(
+        /**
+         * Inject auth service
+         */
         @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
+        /**
+         * Inject user repository
+         */
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
+        /**
+         * Inject profile configuration
+         */
         @Inject(profileConfig.KEY)
-        private readonly profileConfiguration: ConfigType<typeof profileConfig>
+        private readonly profileConfiguration: ConfigType<typeof profileConfig>,
+        /**
+         * Inject data source
+         */
+        private readonly dataSource: DataSource,
+        /**
+         * Inject usersCreateManyProvider
+         */
+        private readonly usersCreateManyProvider: UsersCreateManyProvider
     ) { }
 
     /**
@@ -146,5 +165,8 @@ export class UsersService {
         return newUser;
     }
 
+    public async createMany(createManyUsersDto: CreateManyUsersDto) {
+        return await this.usersCreateManyProvider.createMany(createManyUsersDto);
+    }
 
 }
