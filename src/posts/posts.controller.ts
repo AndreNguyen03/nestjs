@@ -3,9 +3,10 @@ import { PostsService } from './providers/posts.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { PatchPostDto } from './dtos/patch-post.dto';
+import { GetPostsDto } from './dtos/get-posts.dto';
 
 @Controller('posts')
-@ApiTags('Posts') 
+@ApiTags('Posts')
 export class PostsController {
 
     constructor(private readonly postsService: PostsService) {
@@ -13,15 +14,15 @@ export class PostsController {
 
     @Get()
     public getPosts(
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number
+        @Query() postQuery: GetPostsDto
     ) {
-        return this.postsService.findAll(limit, page);
+        return this.postsService.findAll(postQuery);
     }
 
     @Get(':userId')
-    public getPostById(@Param('userId') userId: number) {
-        return this.postsService.findAllByUserId(userId);
+    public getPostById(@Param('userId') userId: number, @Query() postQuery: GetPostsDto) {
+        console.log(postQuery)
+        return this.postsService.findAllByUserId(userId, postQuery);
     }
 
     @ApiOperation({

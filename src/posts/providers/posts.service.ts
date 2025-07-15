@@ -10,6 +10,9 @@ import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { TagsService } from 'src/tags/providers/tags.service';
 import { Tag } from 'src/tags/tag.entity';
 import { PatchPostDto } from '../dtos/patch-post.dto';
+import { GetPostsDto } from '../dtos/get-posts.dto';
+import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
+import { Paginated } from 'src/common/pagination/interface/paginated.interface';
 
 @Injectable()
 export class PostsService {
@@ -32,29 +35,38 @@ export class PostsService {
         /**
          * Inject tagservice
          */
-        private readonly tagsService: TagsService
+        private readonly tagsService: TagsService,
+        /**
+         * Inject pagination provider
+         */
+        private readonly paginationProvider: PaginationProvider
     ) { }
 
 
 
-    public async findAllByUserId(userId: number) {
+    public async findAllByUserId(userId: number, postQuery: GetPostsDto) {
         const user = this.usersService.findOneById(userId);
 
+        if (!user) return 'User id not found';
+
         let posts = await this.postsRepository.find({
-            relations: {
-                metaOptions: true,
-            }
+            where: {
+                author: { id: userId }
+            },
+            skip: (postQuery.page - 1) * postQuery.limit,
+            take: postQuery.limit
         })
 
         return posts;
     }
-    public async findAll(limit: number, page: number) {
-        let posts = await this.postsRepository.find({
-            relations: {
-                metaOptions: true,
-                tags: true
-            }
-        })
+    public async findAll(postQuery: GetPostsDto):  Promise<Paginated<Post>> {
+        let posts = await this.paginationProvider.paginateQuery(
+            {
+                limit: postQuery.limit,
+                page: postQuery.page
+            },
+            this.postsRepository
+        )
 
         return posts;
     }

@@ -12,6 +12,7 @@ import { MetaOptionsModule } from './meta-options/meta-options.module';
 import { Tag } from './tags/tag.entity';
 import { MetaOption } from './meta-options/meta-option.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PaginationModule } from './common/pagination/pagination.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import envValidation from './config/env.validation';
@@ -19,7 +20,7 @@ import envValidation from './config/env.validation';
 const ENV = process.env.NODE_ENV;
 
 @Module({
-  imports: [UsersModule, PostsModule, AuthModule,
+  imports: [UsersModule, PostsModule, AuthModule, TagsModule, MetaOptionsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       // envFilePath: ['.env.development'],
@@ -35,15 +36,14 @@ const ENV = process.env.NODE_ENV;
         entities: [User, Post, Tag, MetaOption],
         autoLoadEntities: configService.get<boolean>('database.autoLoadEntities'),
         synchronize: configService.get<boolean>('database.synchronize'),
-        port: +configService.get<number>('database.port', 5432),
+        port: configService.get<number>('database.port'),
         username: configService.get<string>('database.username'),
         password: configService.get<string>('database.password'),
         host: configService.get<string>('database.host'),
         database: configService.get<string>('database.name'),
       }),
     }),
-    TagsModule,
-    MetaOptionsModule
+    PaginationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

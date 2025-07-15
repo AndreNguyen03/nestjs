@@ -61,6 +61,7 @@ export class UsersCreateManyProvider {
             try {
                 // release connection
                 await queryRunner.release();
+                
             } catch (error) {
                 throw new RequestTimeoutException(
                     'Could not release the connection',
