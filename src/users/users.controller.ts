@@ -9,6 +9,8 @@ import {
     DefaultValuePipe,
     ValidationPipe,
     Patch,
+    UseGuards,
+    SetMetadata,
 
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -17,9 +19,12 @@ import { PatchUserDto } from './dtos/patch-user.dto';
 import { UsersService } from './providers/users.service';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateManyUsersDto } from './dtos/create-many-user.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
+import { Auth } from 'src/auth/decorator/auth.decorator';
+import { AuthType } from 'src/auth/enum/auth-type.enum';
 
 @Controller('users')
-@ApiTags('Users') 
+@ApiTags('Users')
 export class UsersController {
 
 
@@ -41,7 +46,7 @@ export class UsersController {
     @ApiResponse({
         status: 200,
         description: 'Users fetched successfully based on the query',
-        
+
     })
     @ApiQuery({
         name: 'limit',
@@ -61,7 +66,10 @@ export class UsersController {
         return this.usersService.findById(getUsersParamDto);
     }
 
+
     @Post()
+    // @SetMetadata('authType', 'none')
+    @Auth(AuthType.None, AuthType.Bearer)
     public createUser(@Body() createUserDto: CreateUserDto) {
 
         return this.usersService.createUser(createUserDto);
@@ -70,7 +78,7 @@ export class UsersController {
     @Patch()
     public patchUser(@Body() patchUserDto: PatchUserDto) {
         return 'you sent a patch request !';
-    } 
+    }
 
     @Post('create-many')
     public createManyUsers(@Body() createManyUsersDto: CreateManyUsersDto) {

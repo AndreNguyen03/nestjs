@@ -13,6 +13,8 @@ import { PatchPostDto } from '../dtos/patch-post.dto';
 import { GetPostsDto } from '../dtos/get-posts.dto';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 import { Paginated } from 'src/common/pagination/interface/paginated.interface';
+import { CreatePostProvider } from './create-post.provider';
+import { ActiveUserData } from 'src/auth/interface/active-user-data.interface';
 
 @Injectable()
 export class PostsService {
@@ -39,7 +41,11 @@ export class PostsService {
         /**
          * Inject pagination provider
          */
-        private readonly paginationProvider: PaginationProvider
+        private readonly paginationProvider: PaginationProvider,
+        /**
+         * Inject create post provider
+         */
+        private readonly createPostProvider: CreatePostProvider
     ) { }
 
 
@@ -59,7 +65,7 @@ export class PostsService {
 
         return posts;
     }
-    public async findAll(postQuery: GetPostsDto):  Promise<Paginated<Post>> {
+    public async findAll(postQuery: GetPostsDto): Promise<Paginated<Post>> {
         let posts = await this.paginationProvider.paginateQuery(
             {
                 limit: postQuery.limit,
@@ -71,24 +77,8 @@ export class PostsService {
         return posts;
     }
 
-    public async createPost(@Body() createPostDto: CreatePostDto) {
-        // find author from database based on authorId
-        let author = await this.usersService.findOneById(createPostDto.authorId);
-
-        let tagIds: number[] | undefined = createPostDto.tags;
-
-        let tags: Tag[] | undefined = undefined;
-
-        if (tagIds) {
-            tags = await this.tagsService.findMultipleTags(tagIds)
-        }
-
-        if (!author) {
-            throw new Error('Author not found');
-        }
-        let post = this.postsRepository.create({ ...createPostDto, author: author, tags: tags });
-
-        return await this.postsRepository.save(post);
+    public async createPost(createPostDto: CreatePostDto, user: ActiveUserData) {
+        return await this.createPostProvider.create(createPostDto, user);
     }
 
     public async detelePost(postId: number) {

@@ -3,6 +3,8 @@ import { AuthService } from './providers/auth.service';
 import { UsersService } from 'src/users/providers/users.service';
 import { ApiTags } from '@nestjs/swagger';
 import { SignInDto } from './dtos/sign-in.dto';
+import { Auth } from './decorator/auth.decorator';
+import { AuthType } from './enum/auth-type.enum';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -13,6 +15,7 @@ export class AuthController {
     @HttpCode(
         HttpStatus.OK
     )
+    @Auth(AuthType.None)
     public async signIn(@Body() signInDto: SignInDto) {
         return this.authService.signIn(signInDto)
     }
