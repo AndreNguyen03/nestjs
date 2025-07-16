@@ -10,6 +10,8 @@ import profileConfig from "../config/profile.config";
 import { error } from "console";
 import { UsersCreateManyProvider } from "./users-create-many.provider";
 import { CreateManyUsersDto } from "../dtos/create-many-user.dto";
+import { CreateUserProvider } from "./create-user.provider";
+import { FindOneUserByEmailProvider } from "./find-one-user-by-email.provider";
 
 /**
  * UsersService is responsible for managing user-related operations.
@@ -42,7 +44,9 @@ export class UsersService {
         /**
          * Inject usersCreateManyProvider
          */
-        private readonly usersCreateManyProvider: UsersCreateManyProvider
+        private readonly usersCreateManyProvider: UsersCreateManyProvider,
+        private readonly createUserProvider: CreateUserProvider,
+        private readonly findOneUserByEmailProvider: FindOneUserByEmailProvider
     ) { }
 
     /**
@@ -124,49 +128,15 @@ export class UsersService {
         return user;
     }
 
-    public async createUser(CreateUserDto: CreateUserDto) {
-
-        let existingUser: User | null = null;
-        // check is user exists with same email
-        try {
-            existingUser = await this.usersRepository.findOne({
-                where: {
-                    email: CreateUserDto.email
-                }
-            })
-        } catch (error) {
-            throw new RequestTimeoutException('Unable to process your request at the moment please try again later  '),
-            {
-                description: 'Error connecting to the database'
-            }
-        }
-        // handle exception
-
-        if (existingUser) {
-            throw new BadRequestException(
-                'The user already exists, please check your email.'
-            )
-        }
-
-        // create a new user
-        let newUser = this.usersRepository.create(CreateUserDto)
-
-        try {
-            newUser = await this.usersRepository.save(newUser);
-        } catch (error) {
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment please try later',
-                {
-                    description: 'Error connecting to the database'
-                }
-            )
-        }
-
-        return newUser;
+    public async createUser(createUserDto: CreateUserDto) {
+        return this.createUserProvider.createUser(createUserDto);
     }
 
     public async createMany(createManyUsersDto: CreateManyUsersDto) {
         return await this.usersCreateManyProvider.createMany(createManyUsersDto);
     }
 
+    public async findOneByEmail(email: string) {
+        return await this.findOneUserByEmailProvider.findOneByEmail(email);
+    }
 }
