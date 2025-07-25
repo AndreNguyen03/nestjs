@@ -1,4 +1,4 @@
-import {registerAs} from '@nestjs/config'
+import { registerAs } from '@nestjs/config'
 
 export default registerAs('appConfig', () => ({
   environment: process.env.NODE_ENV || 'production',
@@ -8,4 +8,7 @@ export default registerAs('appConfig', () => ({
   awsCloudfrontUrl: process.env.AWS_CLOUDFRONT_URL,
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  mailHost: process.env.MAIL_HOST,
+  smtpUsername: process.env.SMTP_USERNAME,
+  smtpPassword: process.env.SMTP_PASSWORD
 }))
