@@ -27,7 +27,7 @@ export class SignInProvider {
         try {
             isEqual = await this.hashingProvider.comparePassword(
                 signInDto.password,
-                user.password
+                user.password as string
             )
         } catch (error) {
             throw new RequestTimeoutException(
@@ -41,8 +41,6 @@ export class SignInProvider {
         if (!isEqual) {
             throw new UnauthorizedException('Incorrect password')
         }
-
-        
 
         return await this.generateTokenProviders.generateToken(user)
     }
