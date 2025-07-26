@@ -17,7 +17,7 @@ export class CreateUserProvider {
         private readonly mailService: MailService,
     ) { }
 
-    public async createUser(createUserDto: CreateUserDto) {
+    public async createUser(createUserDto: CreateUserDto): Promise<User> {
 
         let existingUser: User | null = null;
         // check is user exists with same email
